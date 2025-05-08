@@ -1,11 +1,13 @@
-import { Link, useNavigate } from 'react-router-dom'
-import React, { useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { signInStart, signInSuccess, signInFailure } from '../redux/user/userSlice.js';
 
-export default function SignIp() {
-  const [formData, setFormData] = useState({})
-  const [error, setError] = useState(null)
-  const [loading, setLoading] = useState(false)
-  const navigate = useNavigate()
+export default function SignIn() {
+  const [formData, setFormData] = useState({});
+  const { loading, error } = useSelector((state) => state.user);
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const handleChange = (e) => {
     setFormData({
@@ -17,9 +19,7 @@ export default function SignIp() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      setLoading(true);
-      setError(null);
-      console.log('Submitting form data:', formData);
+      dispatch(signInStart());
       
       const res = await fetch('/api/auth/sign-in', {
         method: 'POST',
@@ -30,7 +30,7 @@ export default function SignIp() {
       });
       
       console.log('Response status:', res.status);
-    
+      
       const responseText = await res.text();
       console.log('Response text:', responseText);
       
@@ -40,23 +40,19 @@ export default function SignIp() {
         console.log('Parsed data:', data);
         
         if (data.success === false) {
-          setError(data.message);
-          setLoading(false);
+          dispatch(signInFailure(data.message));
           return;
         }
         
-        setLoading(false);
+        dispatch(signInSuccess(data));
         navigate('/');
         
-      } catch (parseError) {
-        console.error('Failed to parse response as JSON:', parseError);
-        setError('Something went wrong with the server response');
-        setLoading(false);
+      } catch (error) {
+        dispatch(signInFailure(error.message));
       }
       
     } catch (error) {
-      setLoading(false);
-      setError('Failed to connect to the server');
+      dispatch(signInFailure('Failed to connect to the server'));
       console.error('Fetch error:', error);
     }
   };
@@ -65,25 +61,25 @@ export default function SignIp() {
     <div className='p-3 max-w-lg mx-auto'>
       <h1 className='text-3xl text-center font-semibold my-7'>Sign In</h1>
       <form onSubmit={handleSubmit} className='flex flex-col gap-4 w-2/3 mx-auto'>
-        <input 
-          type="email" 
-          placeholder='Email' 
-          className='border p-3 rounded-lg' 
-          id='email' 
+        <input
+          type="email"
+          placeholder='Email'
+          className='border p-3 rounded-lg'
+          id='email'
           onChange={handleChange}
           required
         />
-        <input 
-          type="password" 
-          placeholder='Password' 
-          className='border p-3 rounded-lg' 
-          id='password' 
+        <input
+          type="password"
+          placeholder='Password'
+          className='border p-3 rounded-lg'
+          id='password'
           onChange={handleChange}
           required
           minLength={6}
         />
-        <button 
-          disabled={loading} 
+        <button
+          disabled={loading}
           className='bg-slate-700 text-white p-3 rounded-lg uppercase hover:opacity-95 disabled:opacity-80'
         >
           {loading ? 'Loading...' : 'Sign In'}
@@ -97,5 +93,5 @@ export default function SignIp() {
         </Link>
       </div>
     </div>
-  )
+  );
 }
