@@ -1,5 +1,6 @@
-import { Link, useNavigate } from 'react-router-dom'
-import React, { useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
+import OAuth from '../components/OAuth';
 
 export default function SignUp() {
   const [formData, setFormData] = useState({})
@@ -97,6 +98,7 @@ export default function SignUp() {
           {loading ? 'Loading...' : 'Sign Up'}
         </button>
         {error && <p className='text-red-500 mt-2 text-center'>{error}</p>}
+        <OAuth/>
       </form>
       <div className='flex gap-2 mt-5 justify-center items-center'>
         <p>Already have an account?</p>
